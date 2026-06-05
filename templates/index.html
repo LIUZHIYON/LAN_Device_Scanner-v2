@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>局域网设备扫描工具</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", Roboto, sans-serif;
+    background: #f0f2f5;
+    color: #333;
+    padding: 20px;
+    min-height: 100vh;
+}
+.container { max-width: 900px; margin: 0 auto; }
+
+/* Header */
+.header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 24px 30px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+.header h1 { font-size: 24px; font-weight: 600; }
+.header p { opacity: 0.85; margin-top: 4px; font-size: 14px; }
+
+/* Card */
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px 30px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.card-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #444;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Form */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 20px;
+}
+.form-group { display: flex; flex-direction: column; }
+.form-group.full { grid-column: 1 / -1; }
+.form-group label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+.form-group input, .form-group select {
+    padding: 10px 12px;
+    border: 1.5px solid #d9d9d9;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+    outline: none;
+}
+.form-group input:focus, .form-group select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+}
+.form-group .hint {
+    font-size: 11px;
+    color: #999;
+    margin-top: 3px;
+}
+
+/* Buttons */
+.btn-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+}
+.btn {
+    padding: 12px 28px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+.btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4); }
+.btn-danger {
+    background: #ff4d4f;
+    color: white;
+}
+.btn-danger:hover:not(:disabled) { background: #ff7875; }
+.btn-outline {
+    background: white;
+    color: #666;
+    border: 1.5px solid #d9d9d9;
+}
+.btn-outline:hover { border-color: #667eea; color: #667eea; }
+
+/* Progress */
+.progress-bar {
+    height: 6px;
+    background: #f0f0f0;
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 8px 0;
+}
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+    width: 0%;
+}
+.progress-text {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+/* Results */
+.result-item {
+    padding: 14px 16px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    border: 1.5px solid;
+}
+.result-item.matched {
+    background: #f6ffed;
+    border-color: #b7eb8f;
+}
+.result-item.unmatched {
+    background: #fffbe6;
+    border-color: #ffe58f;
+}
+.result-item .ip { font-size: 16px; font-weight: 600; }
+.result-item .ip .badge {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 8px;
+    font-weight: 500;
+}
+.badge-success { background: #52c41a; color: white; }
+.badge-warning { background: #faad14; color: white; }
+.result-item .meta {
+    font-size: 13px;
+    color: #888;
+    margin-top: 4px;
+}
+.result-item .meta span { margin-right: 16px; }
+
+/* Log */
+.log-area {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    font-family: "Cascadia Code", "Fira Code", Consolas, monospace;
+    font-size: 12px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    max-height: 250px;
+    overflow-y: auto;
+    line-height: 1.6;
+    margin-top: 8px;
+}
+.log-line { white-space: pre-wrap; word-break: break-all; }
+.log-line .time { color: #6a9955; margin-right: 8px; }
+.log-line.info { color: #d4d4d4; }
+.log-line.success { color: #4ec9b0; }
+.log-line.warn { color: #ce9178; }
+.log-line.error { color: #f44747; }
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+}
+.empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+
+/* Responsive */
+@media (max-width: 600px) {
+    body { padding: 10px; }
+    .card { padding: 16px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .header { padding: 18px 20px; }
+    .header h1 { font-size: 20px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+    <div class="header">
+        <h1>🔍 局域网设备扫描工具</h1>
+        <p>扫描指定子网，查找符合MAC前缀、SSH端口开放、hostname匹配的设备</p>
+    </div>
+
+    <!-- 配置区 -->
+    <div class="card">
+        <div class="card-title">⚙️ 扫描配置</div>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>子网</label>
+                <input type="text" id="subnet" value="192.168.1" placeholder="192.168.1">
+                <div class="hint">要扫描的网段，如 192.168.1、192.168.2</div>
+            </div>
+            <div class="form-group">
+                <label>MAC前缀</label>
+                <input type="text" id="mac_prefix" value="fe:fd:fc" placeholder="fe:fd:fc">
+                <div class="hint">只扫描此MAC前缀的设备</div>
+            </div>
+            <div class="form-group">
+                <label>SSH用户名</label>
+                <input type="text" id="ssh_user" value="cat" placeholder="cat">
+            </div>
+            <div class="form-group">
+                <label>SSH密码</label>
+                <input type="password" id="ssh_pass" value="temppwd" placeholder="temppwd">
+            </div>
+            <div class="form-group">
+                <label>SSH端口</label>
+                <input type="number" id="ssh_port" value="22" min="1" max="65535">
+            </div>
+            <div class="form-group">
+                <label>Hostname过滤</label>
+                <input type="text" id="hostname_filter" value="ph0v" placeholder="ph0v">
+                <div class="hint">只显示hostname包含此关键字的设备</div>
+            </div>
+            <div class="form-group full" style="display:flex; flex-direction:row; align-items:center; gap:8px;">
+                <input type="checkbox" id="ssh_only" style="width:auto;">
+                <label for="ssh_only" style="margin:0; text-transform:none; letter-spacing:0;">跳过MAC过滤，直接扫描SSH</label>
+            </div>
+        </div>
+        <div class="btn-row">
+            <button class="btn btn-primary" id="btnScan" onclick="startScan()">🚀 开始扫描</button>
+            <button class="btn btn-danger" id="btnStop" onclick="stopScan()" disabled>⏹ 停止</button>
+            <button class="btn btn-outline" onclick="resetForm()">↺ 重置</button>
+        </div>
+    </div>
+
+    <!-- 进度区 -->
+    <div class="card" id="progressCard" style="display:none;">
+        <div class="card-title">⏳ 扫描进度</div>
+        <div class="progress-text" id="progressText">准备中...</div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+
+    <!-- 结果区 -->
+    <div class="card" id="resultsCard" style="display:none;">
+        <div class="card-title" id="resultsTitle">📋 扫描结果</div>
+        <div id="resultsContent"></div>
+    </div>
+
+    <!-- 日志区 -->
+    <div class="card">
+        <div class="card-title" style="cursor:pointer;" onclick="toggleLog()">
+            📜 运行日志 <span id="logToggle" style="font-size:12px; color:#999;">[展开]</span>
+        </div>
+        <div class="log-area" id="logArea" style="display:none;"></div>
+    </div>
+
+</div>
+
+<script>
+// ============ 状态 ============
+let pollTimer = null;
+
+// ============ 表单 ============
+function getConfig() {
+    return {
+        subnet: document.getElementById('subnet').value,
+        mac_prefix: document.getElementById('mac_prefix').value,
+        ssh_user: document.getElementById('ssh_user').value,
+        ssh_pass: document.getElementById('ssh_pass').value,
+        ssh_port: parseInt(document.getElementById('ssh_port').value) || 22,
+        hostname_filter: document.getElementById('hostname_filter').value,
+        ssh_only: document.getElementById('ssh_only').checked
+    };
+}
+
+function resetForm() {
+    document.getElementById('subnet').value = '192.168.1';
+    document.getElementById('mac_prefix').value = 'fe:fd:fc';
+    document.getElementById('ssh_user').value = 'cat';
+    document.getElementById('ssh_pass').value = 'temppwd';
+    document.getElementById('ssh_port').value = '22';
+    document.getElementById('hostname_filter').value = 'cat';
+    document.getElementById('ssh_only').checked = false;
+}
+
+// ============ 扫描控制 ============
+function startScan() {
+    const config = getConfig();
+    const btn = document.getElementById('btnScan');
+    const stopBtn = document.getElementById('btnStop');
+
+    btn.disabled = true;
+    stopBtn.disabled = false;
+
+    // 显示进度
+    document.getElementById('progressCard').style.display = 'block';
+    document.getElementById('resultsCard').style.display = 'none';
+    document.getElementById('resultsContent').innerHTML = '';
+    document.getElementById('logArea').innerHTML = '';
+
+    fetch('/api/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(config)
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'ok') {
+            pollTimer = setInterval(pollStatus, 500);
+        } else {
+            alert(data.message);
+            btn.disabled = false;
+            stopBtn.disabled = true;
+        }
+    })
+    .catch(err => {
+        alert('启动失败: ' + err);
+        btn.disabled = false;
+        stopBtn.disabled = true;
+    });
+}
+
+function stopScan() {
+    if (pollTimer) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+    }
+    fetch('/api/stop', { method: 'POST' });
+    document.getElementById('btnScan').disabled = false;
+    document.getElementById('btnStop').disabled = true;
+    document.getElementById('progressText').textContent = '已停止';
+}
+
+function pollStatus() {
+    fetch('/api/status')
+    .then(r => r.json())
+    .then(data => {
+        // 更新进度
+        if (data.progress) {
+            document.getElementById('progressText').textContent = data.progress;
+            // 估算进度百分比
+            const phases = {
+                'ping': 0.2, 'Ping': 0.2,
+                'ARP': 0.25, 'MAC': 0.3, 
+                '端口': 0.5, 'SSH端口': 0.5,
+                '登录': 0.7, 'SSH登录': 0.7,
+                'hostname': 0.9, '完成': 1.0
+            };
+            let pct = 0.5;
+            for (const [key, val] of Object.entries(phases)) {
+                if (data.phase && data.phase.includes(key)) { pct = val; break; }
+            }
+            document.getElementById('progressFill').style.width = (pct * 100) + '%';
+        }
+
+        // 更新日志
+        if (data.log && data.log.length > 0) {
+            updateLog(data.log);
+        }
+
+        // 显示结果
+        if (data.results && data.results.length > 0) {
+            showResults(data.results);
+        }
+
+        if (data.error) {
+            document.getElementById('progressText').textContent = '❌ ' + data.error;
+            document.getElementById('progressFill').style.width = '100%';
+            document.getElementById('progressFill').style.background = '#ff4d4f';
+        }
+
+        // 扫描完成
+        if (!data.running) {
+            clearInterval(pollTimer);
+            pollTimer = null;
+            document.getElementById('btnScan').disabled = false;
+            document.getElementById('btnStop').disabled = true;
+
+            if (!data.error && data.results.length === 0 && !data.progress.includes('完成')) {
+                // 空的正常结束
+            }
+        }
+    })
+    .catch(err => {
+        console.log('Poll error:', err);
+    });
+}
+
+// ============ 结果展示 ============
+function showResults(results) {
+    const card = document.getElementById('resultsCard');
+    const content = document.getElementById('resultsContent');
+    card.style.display = 'block';
+
+    const matched = results.filter(r => r.matched);
+    const unmatched = results.filter(r => !r.matched);
+    const title = document.getElementById('resultsTitle');
+
+    let html = '';
+    if (matched.length > 0) {
+        title.textContent = `✅ 找到 ${matched.length} 台匹配设备`;
+        html += `<div style="margin-bottom:8px; font-size:13px; color:#52c41a; font-weight:600;">✅ hostname 匹配:</div>`;
+        matched.forEach(r => {
+            html += `
+                <div class="result-item matched">
+                    <div class="ip">${r.ip} <span class="badge badge-success">匹配</span></div>
+                    <div class="meta">
+                        <span>📡 MAC: ${r.mac || 'unknown'}</span>
+                        <span>💻 Host: ${r.hostname || '?'}</span>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    if (unmatched.length > 0) {
+        if (!matched.length) title.textContent = `⚠️ 未找到hostname匹配的设备`;
+        html += `<div style="margin-top:12px; margin-bottom:8px; font-size:13px; color:#faad14; font-weight:600;">⚠️ hostname 不匹配 (已登录但hostname不含关键字):</div>`;
+        unmatched.forEach(r => {
+            html += `
+                <div class="result-item unmatched">
+                    <div class="ip">${r.ip} <span class="badge badge-warning">不匹配</span></div>
+                    <div class="meta">
+                        <span>📡 MAC: ${r.mac || 'unknown'}</span>
+                        <span>💻 Host: ${r.hostname || '?'}</span>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    content.innerHTML = html;
+}
+
+// ============ 日志 ============
+let logExpanded = false;
+function toggleLog() {
+    logExpanded = !logExpanded;
+    document.getElementById('logArea').style.display = logExpanded ? 'block' : 'none';
+    document.getElementById('logToggle').textContent = logExpanded ? '[收起]' : '[展开]';
+}
+
+function updateLog(logEntries) {
+    const area = document.getElementById('logArea');
+    let html = '';
+    logEntries.forEach(e => {
+        const cls = e.level || 'info';
+        html += `<div class="log-line ${cls}"><span class="time">[${e.time}]</span>${escapeHtml(e.msg)}</div>`;
+    });
+    area.innerHTML = html;
+    area.scrollTop = area.scrollHeight;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+</script>
+</body>
+</html>
