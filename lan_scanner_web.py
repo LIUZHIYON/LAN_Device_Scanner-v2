@@ -13,7 +13,6 @@ import threading
 import socket
 import subprocess
 import re
-import webbrowser
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from flask import Flask, render_template, request, jsonify, Response
 
@@ -327,30 +326,17 @@ def api_stop():
 
 if __name__ == '__main__':
     port = 5000
-
-    # 尝试找可用端口
-    for try_port in range(5000, 5010):
-        try:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.bind(("127.0.0.1", try_port))
-            sock.close()
-            port = try_port
-            break
-        except:
-            continue
-
     url = f"http://127.0.0.1:{port}"
 
     print("=" * 50)
     print("   局域网设备扫描工具 - Web版")
     print("=" * 50)
-    print(f"   请在浏览器中打开:")
-    print(f"   {url}")
+    print(f"   浏览器访问: {url}")
     print("=" * 50)
     print("   关闭此窗口即可退出程序")
     print("=" * 50)
 
-    # 延迟打开浏览器，等服务器就绪
-    threading.Timer(1.5, lambda: webbrowser.open(url)).start()
+    app.run(host="127.0.0.1", port=port, debug=False)
+
 
     app.run(host="127.0.0.1", port=port, debug=False)

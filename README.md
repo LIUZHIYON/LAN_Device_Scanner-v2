@@ -1,6 +1,6 @@
-# 🔍 局域网设备扫描工具 (LAN Scanner)
+# 局域网设备扫描工具 (LAN Scanner)
 
-一个基于 Web 界面的局域网设备扫描工具，用于快速发现和识别指定子网中的设备。
+基于 Web 界面的局域网设备扫描工具，用于快速发现和识别指定子网中的设备。
 
 ## 功能特点
 
@@ -14,43 +14,30 @@
 
 ## 使用方法
 
-### 快速启动（推荐）
+### 快速启动
 
-双击 **`启动扫描工具.bat`**，浏览器会自动打开 Web 界面。
+双击 **`启动扫描工具.bat`**，程序会自动：
+
+1. 检测 Python / Flask 环境
+2. 后台启动 Web 服务器
+3. 等待服务器就绪后自动打开浏览器
 
 > 控制台窗口请保持开启，关闭即退出程序。
 
-### 备选方式
-
-如果 bat 文件不可用，也可双击 `局域网设备扫描工具.exe`（PyInstaller 打包），或手动运行：
+### 手动启动
 
 ```bash
+pip install flask paramiko
 python lan_scanner_web.py
 ```
 
-### 常见问题
+然后浏览器打开 `http://127.0.0.1:5000`。
 
-**Q: 双击后没反应？**
-
-这个程序**不是传统桌面窗口程序**，而是一个 **Web 应用**。
-
-双击运行后会：
-1. 在后台启动一个本地 Web 服务器
-2. 自动尝试打开浏览器访问 `http://127.0.0.1:5000`
-
-如果觉得"没反应"，可以试试：
-
-1. **检查任务管理器** — 确认 `python.exe` 或启动工具进程是否在后台运行
-2. **手动打开浏览器**，访问 **http://127.0.0.1:5000**
-3. 如果浏览器没有自动弹出，可手动输入上述地址
-
-> 💡 控制台窗口会显示 Flask 的服务信息（`Running on http://127.0.0.1:5000`），**请不要关闭这个窗口**，关闭即退出程序。
-
-### Web 界面配置
+## Web 界面配置
 
 | 参数 | 说明 | 默认值 |
 |------|------|--------|
-| 子网 | 目标网段前3段 | `192.168.1` |
+| 子网 | 目标网段前 3 段 | `192.168.1` |
 | MAC 前缀 | 只扫描此 MAC 开头的设备 | `fe:fd:fc` |
 | SSH 用户名 | SSH 登录用户名 | `cat` |
 | SSH 密码 | SSH 登录密码 | `temppwd` |
@@ -65,40 +52,22 @@ python lan_scanner_web.py
 Ping 扫描 → 获取 MAC 地址 → MAC 过滤 → SSH 端口检测 → SSH 登录 → Hostname 过滤
 ```
 
-## 技术栈
-
-- **后端**: Python + Flask
-- **前端**: HTML/CSS/JavaScript (原生)
-- **SSH**: Paramiko
-- **打包**: PyInstaller
-
 ## 文件结构
 
 ```
-├── 启动扫描工具.bat           # ⭐ 推荐：双击启动
-├── 局域网设备扫描工具.exe    # PyInstaller 打包（备选）
-├── lan_scanner_web.py        # Python 后端源码
+├── 启动扫描工具.bat       # 双击启动
+├── lan_scanner_web.py     # Python 后端
 ├── templates/
-│   └── index.html            # Web 前端页面
-├── README.md                 # 本文件
-└── .gitignore                # Git 忽略规则
+│   └── index.html          # Web 前端
+├── README.md
+└── .gitignore
 ```
 
-## 开发环境
+## 环境要求
 
 - Python 3.8+
-- Flask 3.x
-- Paramiko 3.x
-- PyInstaller 6.x
-
-### 本地运行（不打包）
-
-```bash
-pip install flask paramiko
-python lan_scanner_web.py
-```
-
-浏览器打开 `http://127.0.0.1:5000` 即可。
+- Flask
+- Paramiko
 
 ## License
 

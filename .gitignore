@@ -1,6 +1,17 @@
-﻿# Build output
+﻿# IDE config
+.idea/
+
+# Build output
 dist/
 build/
-*.spec
 __pycache__/
 *.pyc
+*.spec
+
+# Python
+*.py[cod]
+*.egg-info/
+
+# OS
+.DS_Store
+Thumbs.db

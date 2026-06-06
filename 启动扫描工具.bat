@@ -1,27 +1,38 @@
 @echo off
-chcp 65001 >nul
-title 局域网设备扫描工具
+title LAN Scanner
 
 echo ==================================================
-echo    局域网设备扫描工具 - Web版
+echo    LAN Device Scanner - Web Edition
 echo ==================================================
 echo.
-echo 正在启动 Web 服务...
+echo Starting web server...
 echo.
 
 cd /d "%~dp0"
 
-where python >nul 2>&1
-if %ERRORLEVEL% NEQ 0 (
-    echo [错误] 未找到 Python，请先安装 Python 3.8+
-    echo.
+where python >nul 2>nul
+if errorlevel 1 (
+    echo [ERROR] Python not found. Please install Python 3.8+
     pause
     exit /b 1
 )
 
-start "" http://127.0.0.1:5000
-python lan_scanner_web.py
+pip show flask >nul 2>nul
+if errorlevel 1 (
+    echo Installing dependencies...
+    pip install flask paramiko
+)
 
 echo.
-echo 服务已停止。
+echo Launching server on http://127.0.0.1:5000
+start python lan_scanner_web.py
+
+REM Wait 3 seconds for server to start
+ping 127.0.0.1 -n 3 >nul
+
+start http://127.0.0.1:5000
+
+echo.
+echo Server is running. Check your browser.
+echo Close this window to stop.
 pause
