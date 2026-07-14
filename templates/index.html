@@ -5,299 +5,884 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>局域网设备扫描工具</title>
 <style>
+/* ===== CSS Variables ===== */
+:root {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --primary-light: #818cf8;
+    --primary-bg: rgba(99, 102, 241, 0.08);
+    --accent: #06b6d4;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --bg: #f1f5f9;
+    --surface: #ffffff;
+    --surface-hover: #f8fafc;
+    --border: #e2e8f0;
+    --text: #1e293b;
+    --text-secondary: #64748b;
+    --text-muted: #94a3b8;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
+    --radius-sm: 8px;
+    --radius: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===== Reset & Base ===== */
 * { box-sizing: border-box; margin: 0; padding: 0; }
+
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", Roboto, sans-serif;
-    background: #f0f2f5;
-    color: #333;
-    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                 "Microsoft YaHei", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
     min-height: 100vh;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
 }
-.container { max-width: 900px; margin: 0 auto; }
 
-/* Header */
+.container { max-width: 940px; margin: 0 auto; padding: 24px 20px 60px; }
+
+/* ===== Header ===== */
 .header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
     color: white;
-    padding: 24px 30px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    padding: 32px 36px;
+    border-radius: var(--radius-xl);
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(99, 102, 241, 0.3);
 }
-.header h1 { font-size: 24px; font-weight: 600; }
-.header p { opacity: 0.85; margin-top: 4px; font-size: 14px; }
 
-/* Card */
-.card {
-    background: white;
-    border-radius: 12px;
-    padding: 24px 30px;
-    margin-bottom: 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+.header::before {
+    content: '';
+    position: absolute;
+    top: -80px;
+    right: -40px;
+    width: 220px;
+    height: 220px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 50%;
 }
-.card-title {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 16px;
-    color: #444;
+
+.header::after {
+    content: '';
+    position: absolute;
+    bottom: -60px;
+    right: 120px;
+    width: 140px;
+    height: 140px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 50%;
+}
+
+.header-content {
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 16px;
 }
 
-/* Form */
+.header-icon {
+    width: 52px;
+    height: 52px;
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    backdrop-filter: blur(4px);
+    flex-shrink: 0;
+}
+
+.header-text h1 {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+}
+
+.header-text p {
+    opacity: 0.8;
+    margin-top: 2px;
+    font-size: 13.5px;
+    font-weight: 400;
+}
+
+/* ===== Stats Row ===== */
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    transition: all var(--transition);
+}
+
+.stat-card:hover {
+    box-shadow: var(--shadow);
+    transform: translateY(-1px);
+}
+
+.stat-card .stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.5px;
+}
+
+.stat-card .stat-label {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.stat-card.alive .stat-value { color: #6366f1; }
+.stat-card.candidates .stat-value { color: #f59e0b; }
+.stat-card.logged .stat-value { color: #10b981; }
+.stat-card.matched .stat-value { color: #06b6d4; }
+
+/* ===== Card ===== */
+.card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 24px 28px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    transition: box-shadow var(--transition);
+}
+
+.card:hover {
+    box-shadow: var(--shadow);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: -0.2px;
+}
+
+.card-title .icon-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary);
+}
+
+.card-badge {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.card-badge.config { background: #ede9fe; color: #7c3aed; }
+.card-badge.progress { background: #fef3c7; color: #d97706; }
+.card-badge.result { background: #d1fae5; color: #059669; }
+.card-badge.log { background: #e0e7ff; color: #4f46e5; }
+
+/* ===== Form ===== */
 .form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px 20px;
-}
-.form-group { display: flex; flex-direction: column; }
-.form-group.full { grid-column: 1 / -1; }
-.form-group label {
-    font-size: 12px;
-    font-weight: 600;
-    color: #666;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 4px;
-}
-.form-group input, .form-group select {
-    padding: 10px 12px;
-    border: 1.5px solid #d9d9d9;
-    border-radius: 8px;
-    font-size: 14px;
-    transition: border-color 0.2s;
-    outline: none;
-}
-.form-group input:focus, .form-group select:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
-}
-.form-group .hint {
-    font-size: 11px;
-    color: #999;
-    margin-top: 3px;
+    gap: 14px 20px;
 }
 
-/* Buttons */
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group.full { grid-column: 1 / -1; }
+
+.form-group label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 5px;
+}
+
+.form-group input {
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    color: var(--text);
+    background: var(--surface);
+    transition: all var(--transition);
+    outline: none;
+    font-family: inherit;
+}
+
+.form-group input:hover {
+    border-color: #cbd5e1;
+}
+
+.form-group input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+    background: #fafaff;
+}
+
+.form-group .hint {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    line-height: 1.4;
+}
+
+/* Checkbox */
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 4px;
+}
+
+.checkbox-row input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+
+.checkbox-row label {
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text);
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 500;
+    user-select: none;
+}
+
+/* ===== Buttons ===== */
 .btn-row {
     display: flex;
     gap: 10px;
-    margin-top: 16px;
+    margin-top: 20px;
+    flex-wrap: wrap;
 }
+
 .btn {
-    padding: 12px 28px;
+    padding: 11px 24px;
     border: none;
-    border-radius: 8px;
-    font-size: 15px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition);
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-}
-.btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-.btn-primary {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-}
-.btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4); }
-.btn-danger {
-    background: #ff4d4f;
-    color: white;
-}
-.btn-danger:hover:not(:disabled) { background: #ff7875; }
-.btn-outline {
-    background: white;
-    color: #666;
-    border: 1.5px solid #d9d9d9;
-}
-.btn-outline:hover { border-color: #667eea; color: #667eea; }
-
-/* Progress */
-.progress-bar {
-    height: 6px;
-    background: #f0f0f0;
-    border-radius: 3px;
+    gap: 7px;
+    font-family: inherit;
+    letter-spacing: 0.2px;
+    position: relative;
     overflow: hidden;
-    margin: 8px 0;
-}
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #667eea, #764ba2);
-    border-radius: 3px;
-    transition: width 0.3s ease;
-    width: 0%;
-}
-.progress-text {
-    font-size: 13px;
-    color: #666;
-    margin-bottom: 4px;
 }
 
-/* Results */
-.result-item {
-    padding: 14px 16px;
-    border-radius: 8px;
-    margin-bottom: 8px;
-    border: 1.5px solid;
+.btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
 }
-.result-item.matched {
-    background: #f6ffed;
-    border-color: #b7eb8f;
+
+.btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: transparent;
+    transition: background var(--transition);
 }
-.result-item.unmatched {
-    background: #fffbe6;
-    border-color: #ffe58f;
+
+.btn:hover:not(:disabled)::after {
+    background: rgba(255, 255, 255, 0.1);
 }
-.result-item .ip { font-size: 16px; font-weight: 600; }
-.result-item .ip .badge {
-    display: inline-block;
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 10px;
-    margin-left: 8px;
-    font-weight: 500;
+
+.btn:active:not(:disabled) {
+    transform: scale(0.97);
 }
-.badge-success { background: #52c41a; color: white; }
-.badge-warning { background: #faad14; color: white; }
-.result-item .meta {
-    font-size: 13px;
-    color: #888;
+
+.btn-primary {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+}
+
+.btn-primary:hover:not(:disabled) {
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
+    transform: translateY(-1px);
+}
+
+.btn-danger {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+    background: #dc2626;
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+}
+
+.btn-outline {
+    background: var(--surface);
+    color: var(--text-secondary);
+    border: 1.5px solid var(--border);
+}
+
+.btn-outline:hover:not(:disabled) {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-bg);
+}
+
+/* ===== Progress ===== */
+.progress-section {
     margin-top: 4px;
 }
-.result-item .meta span { margin-right: 16px; }
 
-/* Log */
-.log-area {
-    background: #1e1e1e;
-    color: #d4d4d4;
-    font-family: "Cascadia Code", "Fira Code", Consolas, monospace;
-    font-size: 12px;
-    padding: 12px 16px;
-    border-radius: 8px;
-    max-height: 250px;
-    overflow-y: auto;
-    line-height: 1.6;
-    margin-top: 8px;
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
 }
-.log-line { white-space: pre-wrap; word-break: break-all; }
-.log-line .time { color: #6a9955; margin-right: 8px; }
-.log-line.info { color: #d4d4d4; }
-.log-line.success { color: #4ec9b0; }
-.log-line.warn { color: #ce9178; }
-.log-line.error { color: #f44747; }
 
-/* Empty state */
+.progress-text {
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.progress-pct {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--primary);
+    min-width: 40px;
+    text-align: right;
+}
+
+.progress-bar {
+    height: 8px;
+    background: #f1f5f9;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6, #a855f7);
+    border-radius: 20px;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 0%;
+}
+
+.progress-fill.error {
+    background: linear-gradient(90deg, #ef4444, #f97316);
+}
+
+/* Phase indicator */
+.phase-steps {
+    display: flex;
+    gap: 6px;
+    margin-top: 12px;
+}
+
+.phase-step {
+    flex: 1;
+    height: 3px;
+    border-radius: 10px;
+    background: #e2e8f0;
+    transition: background var(--transition);
+}
+
+.phase-step.active {
+    background: var(--primary);
+}
+
+.phase-step.done {
+    background: var(--success);
+}
+
+/* ===== Results ===== */
+.result-summary {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.result-summary .tag {
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.tag.matched { background: #d1fae5; color: #065f46; }
+.tag.unmatched { background: #fef3c7; color: #92400e; }
+.tag.count { background: #e0e7ff; color: #3730a3; }
+
+.result-grid {
+    display: grid;
+    gap: 10px;
+}
+
+.result-item {
+    padding: 16px 20px;
+    border-radius: var(--radius);
+    border: 1.5px solid;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: all var(--transition);
+}
+
+.result-item:hover {
+    transform: translateX(4px);
+}
+
+.result-item.matched {
+    background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+    border-color: #bbf7d0;
+}
+
+.result-item.unmatched {
+    background: linear-gradient(135deg, #fffbeb, #fefce8);
+    border-color: #fde68a;
+}
+
+.result-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.result-item.matched .result-icon {
+    background: #d1fae5;
+}
+
+.result-item.unmatched .result-icon {
+    background: #fef3c7;
+}
+
+.result-info { flex: 1; min-width: 0; }
+
+.result-info .ip-addr {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.2px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.badge {
+    display: inline-block;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.badge-success { background: #059669; color: white; }
+.badge-warning { background: #d97706; color: white; }
+
+.result-info .meta {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin-top: 5px;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.result-info .meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.copy-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: white;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition);
+    white-space: nowrap;
+    font-family: inherit;
+}
+
+.copy-btn:hover {
+    background: var(--bg);
+    border-color: var(--primary-light);
+    color: var(--primary);
+}
+
+.copy-btn.copied {
+    background: #d1fae5;
+    border-color: #6ee7b7;
+    color: #059669;
+}
+
+/* ===== Log ===== */
+.log-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+}
+
+.log-header-row .expand-icon {
+    transition: transform 0.3s ease;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.log-header-row.expanded .expand-icon {
+    transform: rotate(90deg);
+}
+
+.log-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.btn-icon {
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: var(--text-muted);
+    transition: all var(--transition);
+}
+
+.btn-icon:hover {
+    background: var(--bg);
+    color: var(--text);
+}
+
+.log-area {
+    background: #1a1b2e;
+    color: #c9d1d9;
+    font-family: "Cascadia Code", "Fira Code", "JetBrains Mono", Consolas, monospace;
+    font-size: 12px;
+    padding: 14px 18px;
+    border-radius: var(--radius-sm);
+    max-height: 280px;
+    overflow-y: auto;
+    line-height: 1.8;
+    margin-top: 12px;
+    border: 1px solid #2d2f45;
+}
+
+.log-area::-webkit-scrollbar {
+    width: 6px;
+}
+
+.log-area::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.log-area::-webkit-scrollbar-thumb {
+    background: #3f4160;
+    border-radius: 10px;
+}
+
+.log-area::-webkit-scrollbar-thumb:hover {
+    background: #5a5d80;
+}
+
+.log-line {
+    white-space: pre-wrap;
+    word-break: break-all;
+    padding: 1px 0;
+}
+
+.log-line .time {
+    color: #5e6a7e;
+    margin-right: 8px;
+}
+
+.log-line.info { color: #adbac7; }
+.log-line.success { color: #57ab5a; }
+.log-line.warn { color: #e3b341; }
+.log-line.error { color: #f47067; }
+
+/* ===== Empty State ===== */
 .empty-state {
     text-align: center;
-    padding: 40px 20px;
-    color: #999;
+    padding: 48px 20px;
+    color: var(--text-muted);
 }
-.empty-state .icon { font-size: 48px; margin-bottom: 12px; }
 
-/* Responsive */
-@media (max-width: 600px) {
-    body { padding: 10px; }
-    .card { padding: 16px; }
+.empty-state .empty-icon {
+    font-size: 56px;
+    margin-bottom: 14px;
+    opacity: 0.6;
+}
+
+.empty-state .empty-text {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* ===== Pulse Animation ===== */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.pulse {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+    .container { padding: 12px; }
+
+    .header { padding: 22px 20px; border-radius: var(--radius-lg); }
+    .header-text h1 { font-size: 20px; }
+
+    .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .card { padding: 18px 16px; border-radius: var(--radius); }
+
     .form-grid { grid-template-columns: 1fr; }
-    .header { padding: 18px 20px; }
-    .header h1 { font-size: 20px; }
+
+    .result-item { flex-direction: column; align-items: flex-start; gap: 8px; }
+
+    .result-item .copy-btn { align-self: flex-end; }
+}
+
+@media (max-width: 480px) {
+    .stats-row { grid-template-columns: 1fr; }
+    .btn-row { flex-direction: column; }
+    .btn { width: 100%; justify-content: center; }
 }
 </style>
 </head>
 <body>
 <div class="container">
 
+    <!-- ===== Header ===== -->
     <div class="header">
-        <h1>🔍 局域网设备扫描工具</h1>
-        <p>扫描指定子网，查找符合MAC前缀、SSH端口开放、hostname匹配的设备</p>
+        <div class="header-content">
+            <div class="header-icon">📡</div>
+            <div class="header-text">
+                <h1>局域网设备扫描工具</h1>
+                <p>扫描子网 · 过滤MAC · SSH验证 · Hostname匹配</p>
+            </div>
+        </div>
     </div>
 
-    <!-- 配置区 -->
+    <!-- ===== Stats ===== -->
+    <div class="stats-row" id="statsRow">
+        <div class="stat-card alive">
+            <div class="stat-value" id="statAlive">--</div>
+            <div class="stat-label">存活主机</div>
+        </div>
+        <div class="stat-card candidates">
+            <div class="stat-value" id="statCandidates">--</div>
+            <div class="stat-label">候选设备</div>
+        </div>
+        <div class="stat-card logged">
+            <div class="stat-value" id="statLogged">--</div>
+            <div class="stat-label">SSH 登录</div>
+        </div>
+        <div class="stat-card matched">
+            <div class="stat-value" id="statMatched">--</div>
+            <div class="stat-label">匹配设备</div>
+        </div>
+    </div>
+
+    <!-- ===== Config ===== -->
     <div class="card">
-        <div class="card-title">⚙️ 扫描配置</div>
+        <div class="card-header">
+            <div class="card-title">
+                <span class="icon-dot"></span> 扫描配置
+            </div>
+            <span class="card-badge config">Config</span>
+        </div>
         <div class="form-grid">
             <div class="form-group">
-                <label>子网</label>
+                <label>🌐 子网</label>
                 <input type="text" id="subnet" value="192.168.1" placeholder="192.168.1">
-                <div class="hint">要扫描的网段，如 192.168.1、192.168.2</div>
+                <div class="hint">要扫描的网段前三段，如 192.168.1</div>
             </div>
             <div class="form-group">
-                <label>MAC前缀</label>
+                <label>🔖 MAC 前缀</label>
                 <input type="text" id="mac_prefix" value="fe:fd:fc" placeholder="fe:fd:fc">
-                <div class="hint">只扫描此MAC前缀的设备</div>
+                <div class="hint">筛选匹配此前缀的设备</div>
             </div>
             <div class="form-group">
-                <label>SSH用户名</label>
+                <label>👤 SSH 用户名</label>
                 <input type="text" id="ssh_user" value="cat" placeholder="cat">
             </div>
             <div class="form-group">
-                <label>SSH密码</label>
+                <label>🔑 SSH 密码</label>
                 <input type="password" id="ssh_pass" value="temppwd" placeholder="temppwd">
             </div>
             <div class="form-group">
-                <label>SSH端口</label>
+                <label>🔌 SSH 端口</label>
                 <input type="number" id="ssh_port" value="22" min="1" max="65535">
             </div>
             <div class="form-group">
-                <label>Hostname过滤</label>
+                <label>🏷️ Hostname 过滤</label>
                 <input type="text" id="hostname_filter" value="ph0v" placeholder="ph0v">
-                <div class="hint">只显示hostname包含此关键字的设备</div>
+                <div class="hint">按 hostname 关键字筛选结果</div>
             </div>
-            <div class="form-group full" style="display:flex; flex-direction:row; align-items:center; gap:8px;">
-                <input type="checkbox" id="ssh_only" style="width:auto;">
-                <label for="ssh_only" style="margin:0; text-transform:none; letter-spacing:0;">跳过MAC过滤，直接扫描SSH</label>
+            <div class="form-group full">
+                <div class="checkbox-row">
+                    <input type="checkbox" id="ssh_only">
+                    <label for="ssh_only">跳过 MAC 过滤，对所有存活主机尝试 SSH</label>
+                </div>
             </div>
         </div>
         <div class="btn-row">
-            <button class="btn btn-primary" id="btnScan" onclick="startScan()">🚀 开始扫描</button>
-            <button class="btn btn-danger" id="btnStop" onclick="stopScan()" disabled>⏹ 停止</button>
-            <button class="btn btn-outline" onclick="resetForm()">↺ 重置</button>
+            <button class="btn btn-primary" id="btnScan" onclick="startScan()">
+                🚀 开始扫描
+            </button>
+            <button class="btn btn-danger" id="btnStop" onclick="stopScan()" disabled>
+                ⏹ 停止
+            </button>
+            <button class="btn btn-outline" onclick="resetForm()">
+                ↺ 重置配置
+            </button>
         </div>
     </div>
 
-    <!-- 进度区 -->
+    <!-- ===== Progress ===== -->
     <div class="card" id="progressCard" style="display:none;">
-        <div class="card-title">⏳ 扫描进度</div>
-        <div class="progress-text" id="progressText">准备中...</div>
-        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-    </div>
-
-    <!-- 结果区 -->
-    <div class="card" id="resultsCard" style="display:none;">
-        <div class="card-title" id="resultsTitle">📋 扫描结果</div>
-        <div id="resultsContent"></div>
-    </div>
-
-    <!-- 日志区 -->
-    <div class="card">
-        <div class="card-title" style="cursor:pointer;" onclick="toggleLog()">
-            📜 运行日志 <span id="logToggle" style="font-size:12px; color:#999;">[展开]</span>
+        <div class="card-header">
+            <div class="card-title">
+                <span class="icon-dot pulse" style="background:#f59e0b;"></span>
+                扫描进度
+            </div>
+            <span class="card-badge progress" id="elapsedBadge">0.0s</span>
         </div>
-        <div class="log-area" id="logArea" style="display:none;"></div>
+        <div class="progress-section">
+            <div class="progress-header">
+                <span class="progress-text" id="progressText">准备中...</span>
+                <span class="progress-pct" id="progressPct">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="phase-steps" id="phaseSteps">
+                <div class="phase-step" title="Ping"></div>
+                <div class="phase-step" title="ARP"></div>
+                <div class="phase-step" title="MAC过滤"></div>
+                <div class="phase-step" title="端口检测"></div>
+                <div class="phase-step" title="SSH登录"></div>
+                <div class="phase-step" title="Hostname"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Results ===== -->
+    <div class="card" id="resultsCard" style="display:none;">
+        <div class="card-header">
+            <div class="card-title">
+                <span class="icon-dot" style="background:#10b981;"></span>
+                扫描结果
+            </div>
+            <div class="result-summary" id="resultSummary"></div>
+        </div>
+        <div class="result-grid" id="resultsContent"></div>
+    </div>
+
+    <!-- ===== Log ===== -->
+    <div class="card">
+        <div class="log-header-row" id="logHeaderRow" onclick="toggleLog()">
+            <div class="card-title" style="margin-bottom:0;">
+                <span class="icon-dot" style="background:#6366f1;"></span>
+                运行日志
+                <span class="expand-icon">▶</span>
+            </div>
+            <div class="log-actions" onclick="event.stopPropagation();">
+                <button class="btn-icon" title="清空日志" onclick="clearLogUI()">🗑️</button>
+                <button class="btn-icon" title="复制日志" onclick="copyLog()">📋</button>
+            </div>
+        </div>
+        <div class="log-area" id="logArea" style="display:none;">
+            <div class="log-line info">
+                <span class="time">[--:--:--]</span>等待扫描启动...
+            </div>
+        </div>
     </div>
 
 </div>
 
 <script>
-// ============ 状态 ============
+// ============ State ============
 let pollTimer = null;
+let logExpanded = false;
 
-// ============ 表单 ============
+// ============ Form ============
 function getConfig() {
     return {
-        subnet: document.getElementById('subnet').value,
-        mac_prefix: document.getElementById('mac_prefix').value,
-        ssh_user: document.getElementById('ssh_user').value,
-        ssh_pass: document.getElementById('ssh_pass').value,
+        subnet: document.getElementById('subnet').value.trim() || '192.168.1',
+        mac_prefix: document.getElementById('mac_prefix').value.trim() || 'fe:fd:fc',
+        ssh_user: document.getElementById('ssh_user').value.trim() || 'cat',
+        ssh_pass: document.getElementById('ssh_pass').value.trim() || 'temppwd',
         ssh_port: parseInt(document.getElementById('ssh_port').value) || 22,
-        hostname_filter: document.getElementById('hostname_filter').value,
+        hostname_filter: document.getElementById('hostname_filter').value.trim() || 'ph0v',
         ssh_only: document.getElementById('ssh_only').checked
     };
 }
@@ -308,11 +893,11 @@ function resetForm() {
     document.getElementById('ssh_user').value = 'cat';
     document.getElementById('ssh_pass').value = 'temppwd';
     document.getElementById('ssh_port').value = '22';
-    document.getElementById('hostname_filter').value = 'cat';
+    document.getElementById('hostname_filter').value = 'ph0v';
     document.getElementById('ssh_only').checked = false;
 }
 
-// ============ 扫描控制 ============
+// ============ Scan Control ============
 function startScan() {
     const config = getConfig();
     const btn = document.getElementById('btnScan');
@@ -321,11 +906,29 @@ function startScan() {
     btn.disabled = true;
     stopBtn.disabled = false;
 
-    // 显示进度
+    // Show progress, hide old results
     document.getElementById('progressCard').style.display = 'block';
     document.getElementById('resultsCard').style.display = 'none';
     document.getElementById('resultsContent').innerHTML = '';
-    document.getElementById('logArea').innerHTML = '';
+
+    // Reset stats
+    ['statAlive','statCandidates','statLogged','statMatched'].forEach(
+        id => document.getElementById(id).textContent = '--'
+    );
+
+    // Reset phase steps
+    document.querySelectorAll('.phase-step').forEach(s => {
+        s.classList.remove('active', 'done');
+    });
+
+    // Reset progress bar
+    const fill = document.getElementById('progressFill');
+    fill.style.width = '0%';
+    fill.classList.remove('error');
+    document.getElementById('progressPct').textContent = '0%';
+
+    // Auto expand log
+    showLog();
 
     fetch('/api/scan', {
         method: 'POST',
@@ -335,15 +938,15 @@ function startScan() {
     .then(r => r.json())
     .then(data => {
         if (data.status === 'ok') {
-            pollTimer = setInterval(pollStatus, 500);
+            pollTimer = setInterval(pollStatus, 400);
         } else {
-            alert(data.message);
+            alert('启动失败: ' + data.message);
             btn.disabled = false;
             stopBtn.disabled = true;
         }
     })
     .catch(err => {
-        alert('启动失败: ' + err);
+        alert('网络错误: ' + err);
         btn.disabled = false;
         stopBtn.disabled = true;
     });
@@ -357,57 +960,32 @@ function stopScan() {
     fetch('/api/stop', { method: 'POST' });
     document.getElementById('btnScan').disabled = false;
     document.getElementById('btnStop').disabled = true;
-    document.getElementById('progressText').textContent = '已停止';
+    document.getElementById('progressText').textContent = '⏹ 已请求停止...';
+
+    const fill = document.getElementById('progressFill');
+    fill.classList.add('error');
+    document.getElementById('progressPct').textContent = 'STOP';
 }
 
 function pollStatus() {
     fetch('/api/status')
     .then(r => r.json())
     .then(data => {
-        // 更新进度
-        if (data.progress) {
-            document.getElementById('progressText').textContent = data.progress;
-            // 估算进度百分比
-            const phases = {
-                'ping': 0.2, 'Ping': 0.2,
-                'ARP': 0.25, 'MAC': 0.3, 
-                '端口': 0.5, 'SSH端口': 0.5,
-                '登录': 0.7, 'SSH登录': 0.7,
-                'hostname': 0.9, '完成': 1.0
-            };
-            let pct = 0.5;
-            for (const [key, val] of Object.entries(phases)) {
-                if (data.phase && data.phase.includes(key)) { pct = val; break; }
-            }
-            document.getElementById('progressFill').style.width = (pct * 100) + '%';
-        }
+        updateProgress(data);
+        updateLog(data.log);
+        updateResults(data);
+        updateStats(data);
+        updateElapsed(data);
 
-        // 更新日志
-        if (data.log && data.log.length > 0) {
-            updateLog(data.log);
-        }
-
-        // 显示结果
-        if (data.results && data.results.length > 0) {
-            showResults(data.results);
-        }
-
-        if (data.error) {
-            document.getElementById('progressText').textContent = '❌ ' + data.error;
-            document.getElementById('progressFill').style.width = '100%';
-            document.getElementById('progressFill').style.background = '#ff4d4f';
-        }
-
-        // 扫描完成
         if (!data.running) {
             clearInterval(pollTimer);
             pollTimer = null;
             document.getElementById('btnScan').disabled = false;
             document.getElementById('btnStop').disabled = true;
 
-            if (!data.error && data.results.length === 0 && !data.progress.includes('完成')) {
-                // 空的正常结束
-            }
+            // Remove pulse
+            const dot = document.querySelector('#progressCard .icon-dot');
+            if (dot) dot.classList.remove('pulse');
         }
     })
     .catch(err => {
@@ -415,76 +993,296 @@ function pollStatus() {
     });
 }
 
-// ============ 结果展示 ============
-function showResults(results) {
+// ============ Progress ============
+function updateProgress(data) {
+    const text = document.getElementById('progressText');
+    const fill = document.getElementById('progressFill');
+    const pctLabel = document.getElementById('progressPct');
+    const phase = data.phase || '';
+
+    if (data.error) {
+        text.textContent = '❌ ' + data.error;
+        fill.classList.add('error');
+        pctLabel.textContent = 'ERR';
+        return;
+    }
+
+    // Compute percentage from phase
+    let pct = 0;
+    const phaseMap = [
+        { key: 'Ping', pct: 0.15 },
+        { key: 'ARP', pct: 0.22 },
+        { key: 'MAC', pct: 0.28 },
+        { key: '端口', pct: 0.35 },
+        { key: 'SSH', pct: 0.65 },
+        { key: 'hostname', pct: 0.90 },
+        { key: '完成', pct: 1.0 },
+    ];
+
+    for (const m of phaseMap) {
+        if (phase.includes(m.key)) {
+            pct = m.pct;
+            break;
+        }
+    }
+
+    // Also try to parse progress string for sub-phase pct
+    if (data.progress) {
+        const match = data.progress.match(/\((\d+)%\)/);
+        if (match) {
+            const sub = parseInt(match[1]) / 100;
+            // Blend: base phase pct + sub progress within phase
+            const next = phaseMap.find(m => phase.includes(m.key));
+            if (next) {
+                const idx = phaseMap.indexOf(next);
+                const base = next.pct;
+                const range = idx < phaseMap.length - 1
+                    ? phaseMap[idx + 1].pct - base
+                    : 0.1;
+                pct = base + sub * range;
+            }
+        }
+    }
+
+    text.textContent = data.progress || '处理中...';
+    fill.style.width = (pct * 100).toFixed(1) + '%';
+    pctLabel.textContent = Math.round(pct * 100) + '%';
+
+    // Update phase steps
+    const phases = ['Ping', 'ARP', 'MAC', '端口', 'SSH', 'hostname'];
+    const steps = document.querySelectorAll('.phase-step');
+    let activeIdx = -1;
+    for (let i = 0; i < phases.length; i++) {
+        if (phase.includes(phases[i])) { activeIdx = i; break; }
+    }
+    if (phase.includes('完成')) activeIdx = 6;
+
+    steps.forEach((step, i) => {
+        step.classList.remove('active', 'done');
+        if (i < activeIdx) step.classList.add('done');
+        else if (i === activeIdx) step.classList.add('active');
+    });
+}
+
+// ============ Stats ============
+function updateStats(data) {
+    // Parse log to extract stats
+    if (!data.log) return;
+
+    const allLog = data.log.map(l => l.msg).join('\n');
+
+    const aliveMatch = allLog.match(/存活主机[：:]\s*(\d+)/);
+    if (aliveMatch) {
+        document.getElementById('statAlive').textContent = aliveMatch[1];
+    }
+
+    const macMatch = allLog.match(/MAC匹配[：:]\s*(\d+)/);
+    if (macMatch) {
+        document.getElementById('statCandidates').textContent = macMatch[1];
+    } else if (allLog.includes('跳过MAC过滤') && aliveMatch) {
+        document.getElementById('statCandidates').textContent = aliveMatch[1];
+    }
+
+    const loginMatch = allLog.match(/找到\s*(\d+)\s*台匹配|显示全部\s*(\d+)\s*台/);
+    if (loginMatch) {
+        const count = loginMatch[1] || loginMatch[2];
+        document.getElementById('statLogged').textContent = count || '--';
+    }
+
+    const portOpenMatch = allLog.match(/端口开放[：:]\s*(\d+)/);
+    if (portOpenMatch) {
+        document.getElementById('statCandidates').textContent = portOpenMatch[1];
+    }
+
+    // Matched count from results
+    if (data.results && data.results.length > 0) {
+        const matched = data.results.filter(r => r.matched).length;
+        document.getElementById('statMatched').textContent = matched;
+        document.getElementById('statLogged').textContent = data.results.length;
+    }
+}
+
+function updateElapsed(data) {
+    if (data.elapsed !== undefined) {
+        document.getElementById('elapsedBadge').textContent = data.elapsed.toFixed(1) + 's';
+    }
+}
+
+// ============ Results ============
+function updateResults(data) {
+    if (!data.results || data.results.length === 0) return;
+
     const card = document.getElementById('resultsCard');
     const content = document.getElementById('resultsContent');
+    const summary = document.getElementById('resultSummary');
     card.style.display = 'block';
 
-    const matched = results.filter(r => r.matched);
-    const unmatched = results.filter(r => !r.matched);
-    const title = document.getElementById('resultsTitle');
+    const matched = data.results.filter(r => r.matched);
+    const unmatched = data.results.filter(r => !r.matched);
 
-    let html = '';
+    // Summary tags
+    summary.innerHTML = '';
     if (matched.length > 0) {
-        title.textContent = `✅ 找到 ${matched.length} 台匹配设备`;
-        html += `<div style="margin-bottom:8px; font-size:13px; color:#52c41a; font-weight:600;">✅ hostname 匹配:</div>`;
+        summary.innerHTML +=
+            `<span class="tag matched">✅ ${matched.length} 匹配</span>`;
+    }
+    if (unmatched.length > 0) {
+        summary.innerHTML +=
+            `<span class="tag unmatched">⚠️ ${unmatched.length} 不匹配</span>`;
+    }
+    summary.innerHTML += `<span class="tag count">📊 共 ${data.results.length} 台</span>`;
+
+    // Build result cards
+    let html = '';
+
+    if (matched.length > 0) {
+        html +=
+            `<div style="font-size:13px;color:#059669;font-weight:700;margin-bottom:6px;">
+                ✅ Hostname 匹配的设备
+            </div>`;
         matched.forEach(r => {
-            html += `
-                <div class="result-item matched">
-                    <div class="ip">${r.ip} <span class="badge badge-success">匹配</span></div>
-                    <div class="meta">
-                        <span>📡 MAC: ${r.mac || 'unknown'}</span>
-                        <span>💻 Host: ${r.hostname || '?'}</span>
-                    </div>
-                </div>
-            `;
+            html += buildResultItem(r, true);
         });
     }
 
     if (unmatched.length > 0) {
-        if (!matched.length) title.textContent = `⚠️ 未找到hostname匹配的设备`;
-        html += `<div style="margin-top:12px; margin-bottom:8px; font-size:13px; color:#faad14; font-weight:600;">⚠️ hostname 不匹配 (已登录但hostname不含关键字):</div>`;
+        const label = matched.length > 0
+            ? '⚠️ Hostname 不匹配 (已登录但关键字不符)'
+            : '⚠️ 未找到 Hostname 匹配的设备';
+        html +=
+            `<div style="font-size:13px;color:#d97706;font-weight:700;margin-top:14px;margin-bottom:6px;">
+                ${label}
+            </div>`;
         unmatched.forEach(r => {
-            html += `
-                <div class="result-item unmatched">
-                    <div class="ip">${r.ip} <span class="badge badge-warning">不匹配</span></div>
-                    <div class="meta">
-                        <span>📡 MAC: ${r.mac || 'unknown'}</span>
-                        <span>💻 Host: ${r.hostname || '?'}</span>
-                    </div>
-                </div>
-            `;
+            html += buildResultItem(r, false);
         });
     }
 
     content.innerHTML = html;
 }
 
-// ============ 日志 ============
-let logExpanded = false;
+function buildResultItem(r, matched) {
+    const cls = matched ? 'matched' : 'unmatched';
+    const badgeHtml = matched
+        ? '<span class="badge badge-success">匹配</span>'
+        : '<span class="badge badge-warning">不匹配</span>';
+    const icon = matched ? '✅' : '⚠️';
+
+    return `
+        <div class="result-item ${cls}">
+            <div class="result-icon">${icon}</div>
+            <div class="result-info">
+                <div class="ip-addr">
+                    ${escapeHtml(r.ip)}
+                    ${badgeHtml}
+                </div>
+                <div class="meta">
+                    <span>📡 MAC: ${escapeHtml(r.mac || 'unknown')}</span>
+                    <span>💻 Host: ${escapeHtml(r.hostname || '?')}</span>
+                </div>
+            </div>
+            <button class="copy-btn" onclick="copyIP('${escapeHtml(r.ip)}', this)">
+                📋 复制 IP
+            </button>
+        </div>
+    `;
+}
+
+function copyIP(ip, btn) {
+    navigator.clipboard.writeText(ip).then(() => {
+        btn.textContent = '✅ 已复制';
+        btn.classList.add('copied');
+        setTimeout(() => {
+            btn.textContent = '📋 复制 IP';
+            btn.classList.remove('copied');
+        }, 2000);
+    }).catch(() => {
+        // Fallback
+        const ta = document.createElement('textarea');
+        ta.value = ip;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        btn.textContent = '✅ 已复制';
+        btn.classList.add('copied');
+        setTimeout(() => {
+            btn.textContent = '📋 复制 IP';
+            btn.classList.remove('copied');
+        }, 2000);
+    });
+}
+
+// ============ Log ============
 function toggleLog() {
     logExpanded = !logExpanded;
-    document.getElementById('logArea').style.display = logExpanded ? 'block' : 'none';
-    document.getElementById('logToggle').textContent = logExpanded ? '[收起]' : '[展开]';
+    const area = document.getElementById('logArea');
+    const header = document.getElementById('logHeaderRow');
+
+    area.style.display = logExpanded ? 'block' : 'none';
+    if (logExpanded) {
+        header.classList.add('expanded');
+        area.scrollTop = area.scrollHeight;
+    } else {
+        header.classList.remove('expanded');
+    }
+}
+
+function showLog() {
+    if (!logExpanded) toggleLog();
 }
 
 function updateLog(logEntries) {
+    if (!logEntries || logEntries.length === 0) return;
     const area = document.getElementById('logArea');
     let html = '';
     logEntries.forEach(e => {
         const cls = e.level || 'info';
-        html += `<div class="log-line ${cls}"><span class="time">[${e.time}]</span>${escapeHtml(e.msg)}</div>`;
+        html +=
+            `<div class="log-line ${cls}">` +
+            `<span class="time">[${escapeHtml(e.time)}]</span>` +
+            `${escapeHtml(e.msg)}</div>`;
     });
     area.innerHTML = html;
-    area.scrollTop = area.scrollHeight;
+    if (logExpanded) {
+        area.scrollTop = area.scrollHeight;
+    }
 }
 
+function clearLogUI() {
+    document.getElementById('logArea').innerHTML =
+        '<div class="log-line info">' +
+        '<span class="time">[--:--:--]</span>日志已清空</div>';
+}
+
+function copyLog() {
+    const area = document.getElementById('logArea');
+    const text = area.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        // Brief feedback
+    }).catch(() => {});
+}
+
+// ============ Utils ============
 function escapeHtml(text) {
     const div = document.createElement('div');
-    div.textContent = text;
+    div.textContent = String(text);
     return div.innerHTML;
 }
+
+// ============ Keyboard Shortcuts ============
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.key === 'Enter') {
+        e.preventDefault();
+        startScan();
+    }
+    if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        stopScan();
+    }
+});
 </script>
 </body>
 </html>
